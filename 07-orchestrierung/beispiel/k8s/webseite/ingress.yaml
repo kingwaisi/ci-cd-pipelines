@@ -1,0 +1,19 @@
+# Ein Ingress ist die Eingangstür des Clusters für HTTP-Anfragen von außen.
+# k3d bringt dafür bereits den Ingress-Controller "Traefik" mit.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webseite
+spec:
+  rules:
+    # Keine Angabe von "host": Diese Regel gilt für alle Anfragen,
+    # für die es keine genauere Regel gibt (z. B. http://localhost:8080)
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: webseite
+                port:
+                  number: 80

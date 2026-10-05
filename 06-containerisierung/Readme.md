@@ -878,10 +878,10 @@ Ein **Volume** ist ein Ordner **außerhalb** des Containers, den Docker an einer
 
 Es gibt zwei Arten:
 
-| Art              | Schreibweise in Compose               | Wer verwaltet den Ordner? | Typischer Einsatz                                          |
-| ---------------- | ------------------------------------- | ------------------------- | ---------------------------------------------------------- |
-| **Named Volume** | `db-daten:/var/lib/postgresql/data`   | Docker (unter `/var/lib/docker/volumes/`) | Datenbanken, Uploads: Daten, die der Container selbst erzeugt |
-| **Bind Mount**   | `./html:/usr/share/nginx/html`        | Du (ein ganz normaler Ordner auf dem Host) | Konfigurationsdateien, Webseiten während der Entwicklung   |
+| Art              | Schreibweise in Compose             | Wer verwaltet den Ordner?                  | Typischer Einsatz                                             |
+| ---------------- | ----------------------------------- | ------------------------------------------ | ------------------------------------------------------------- |
+| **Named Volume** | `db-daten:/var/lib/postgresql/data` | Docker (unter `/var/lib/docker/volumes/`)  | Datenbanken, Uploads: Daten, die der Container selbst erzeugt |
+| **Bind Mount**   | `./html:/usr/share/nginx/html`      | Du (ein ganz normaler Ordner auf dem Host) | Konfigurationsdateien, Webseiten während der Entwicklung      |
 
 Links vom Doppelpunkt steht immer die **Host-Seite** (Volume-Name oder Ordner), rechts der **Pfad im Container**. Das Prinzip kennst du schon von `-p 8080:80`.
 
@@ -1057,13 +1057,13 @@ Der `docker run`-Befehl startet einen Wegwerf-Container nur, um die `index.html`
 Dann in `compose.yaml` beim Service `webseite` einen Bind Mount ergänzen:
 
 ```yaml
-  webseite:
-    image: <dein-username>/meine-webseite:2.0
-    ports:
-      - "80:80"
-    restart: unless-stopped
-    volumes:
-      - ./html:/usr/share/nginx/html:ro
+webseite:
+  image: <dein-username>/meine-webseite:2.0
+  ports:
+    - "80:80"
+  restart: unless-stopped
+  volumes:
+    - ./html:/usr/share/nginx/html:ro
 ```
 
 `./html` ist der Ordner neben der `compose.yaml`, `:ro` bedeutet _read-only_: nginx darf lesen, aber nicht schreiben. Bind Mounts brauchen **keinen** Eintrag im unteren `volumes`-Block.
@@ -1163,8 +1163,8 @@ Das VPC selbst kostet nichts, du kannst es also behalten. Willst du es trotzdem 
 | Browser zeigt nach `docker build` noch die alte Seite                   | Der **alte Container** läuft noch → stoppen, löschen, mit dem **neuen Tag** neu starten; `Strg + F5` im Browser                            |
 | Browser zeigt „Welcome to nginx!“ statt deiner Seite auf dem Server     | Das nginx aus Kapitel 05 antwortet statt dem Container → `sudo systemctl stop nginx`, dann den Container neu starten                       |
 | `Connection timed out` im Browser auf dem Server                        | `https://` statt `http://` **oder** Port fehlt in der Security Group **oder** neue Public IP nach Neustart nicht übernommen                |
-| `Connection timed out` bei SSH **und** im Browser                       | Instanz liegt im **privaten** Subnetz, oder das Subnetz hat keine Route `0.0.0.0/0` → Internet Gateway → Aufgabe 5, Schritt 1 (Kontrolle) |
-| Instanz hat **keine Public IPv4 address**                               | **Auto-assign public IP** stand beim Erstellen auf Disable → Instanz terminieren und Aufgabe 5, Schritt 2 wiederholen                     |
+| `Connection timed out` bei SSH **und** im Browser                       | Instanz liegt im **privaten** Subnetz, oder das Subnetz hat keine Route `0.0.0.0/0` → Internet Gateway → Aufgabe 5, Schritt 1 (Kontrolle)  |
+| Instanz hat **keine Public IPv4 address**                               | **Auto-assign public IP** stand beim Erstellen auf Disable → Instanz terminieren und Aufgabe 5, Schritt 2 wiederholen                      |
 | Beim Launch ist mein VPC nicht auswählbar                               | Falsche **Region** – das VPC liegt in `us-east-1`, die Instanz wird in einer anderen Region erstellt → Region oben rechts prüfen           |
 
 ## Kontrollfragen

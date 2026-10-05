@@ -1,0 +1,15 @@
+# Nur für Docker Desktop (siehe DOCKER-DESKTOP.md)
+#
+# Docker Desktop bringt keinen Ingress-Controller mit. Dafür macht es jeden
+# Service vom Typ LoadBalancer direkt unter http://localhost:<port> erreichbar.
+apiVersion: v1
+kind: Service
+metadata:
+  name: webseite-lb
+spec:
+  type: LoadBalancer
+  selector:
+    app: webseite
+  ports:
+    - port: 8080 # http://localhost:8080 auf deinem Rechner
+      targetPort: 80 # Port im Container

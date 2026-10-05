@@ -1,0 +1,13 @@
+# Ein Service gibt den Pods eine feste Adresse im Cluster und verteilt
+# die Anfragen auf alle Pods mit dem passenden Label
+apiVersion: v1
+kind: Service
+metadata:
+  name: webseite
+spec:
+  # Der Service leitet an alle Pods mit dem Label app=webseite weiter
+  selector:
+    app: webseite
+  ports:
+    - port: 80 # Port des Service
+      targetPort: 80 # Port im Container

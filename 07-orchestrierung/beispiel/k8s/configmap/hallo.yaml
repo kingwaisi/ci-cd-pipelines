@@ -1,0 +1,85 @@
+# Anwenden:  kubectl apply -f k8s/configmap/
+# Aufrufen:  http://hallo.localhost:8080
+#
+# Eine Webseite ganz ohne eigenes Image: Die index.html steckt in einer
+# ConfigMap und wird als Datei in den nginx-Container eingehängt.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hallo-html
+data:
+  # Schlüssel = Dateiname, Wert = Inhalt der Datei
+  index.html: |
+    <!doctype html>
+    <html lang="de">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Hallo ConfigMap</title>
+      </head>
+      <body>
+        <h1>Hallo aus einer ConfigMap!</h1>
+        <p>Diese Seite steckt nicht im Image, sondern in einer ConfigMap.</p>
+        <p>Version: 1.0</p>
+      </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hallo
+  labels:
+    app: hallo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hallo
+  template:
+    metadata:
+      labels:
+        app: hallo
+    spec:
+      containers:
+        - name: nginx
+          # Das unveränderte, offizielle Image – kein docker build nötig
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            # Die ConfigMap als Ordner in den Container einhängen
+            - name: html
+              mountPath: /usr/share/nginx/html
+              readOnly: true
+      volumes:
+        - name: html
+          configMap:
+            name: hallo-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hallo
+spec:
+  selector:
+    app: hallo
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hallo
+spec:
+  rules:
+    - host: hallo.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hallo
+                port:
+                  number: 80

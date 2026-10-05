@@ -1,0 +1,66 @@
+# Anwenden:  kubectl apply -f k8s/apache/
+# Aufrufen:  http://apache.localhost:8080
+#
+# Mehrere Objekte in einer Datei werden mit "---" getrennt
+
+# Ein fertiges Image von Docker Hub (Apache-Webserver)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apache
+  labels:
+    app: apache
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apache
+  template:
+    metadata:
+      labels:
+        app: apache
+    spec:
+      containers:
+        - name: apache
+          image: httpd:alpine
+          ports:
+            - containerPort: 80
+          # Ressourcen: "requests" ist das, was der Pod mindestens bekommt (danach
+          # sucht Kubernetes einen passenden Node aus), "limits" ist die Obergrenze.
+          # Braucht der Container mehr RAM als das Limit, wird er beendet (OOMKilled).
+          resources:
+            requests:
+              memory: 32Mi
+              cpu: 100m
+            limits:
+              memory: 64Mi
+              cpu: 500m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apache
+spec:
+  selector:
+    app: apache
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: apache
+spec:
+  rules:
+    # Diese Regel gilt nur für Anfragen an den Hostnamen apache.localhost
+    - host: apache.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: apache
+                port:
+                  number: 80

@@ -1,0 +1,65 @@
+# Anwenden:  kubectl apply -f k8s/datenbank/
+# Status:    kubectl get pods,pvc
+# Löschen:   kubectl delete -f k8s/datenbank/   (löscht auch die Daten!)
+
+# PersistentVolumeClaim (PVC): "Ich brauche 1 GiB Speicher, der Pods überlebt"
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-daten
+spec:
+  accessModes:
+    - ReadWriteOnce # von einem Node gleichzeitig les- und schreibbar
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+  labels:
+    app: db
+spec:
+  # Eine Datenbank lässt sich nicht einfach durch mehr Kopien skalieren
+  replicas: 1
+  # Erst den alten Pod beenden, dann den neuen starten – sonst würden
+  # bei einem Update kurz zwei Datenbanken auf denselben Daten arbeiten
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          # Alle Schlüssel aus dem Secret als Umgebungsvariablen übernehmen
+          envFrom:
+            - secretRef:
+                name: db-zugang
+          volumeMounts:
+            - name: daten
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: daten
+          persistentVolumeClaim:
+            claimName: db-daten
+---
+# Der Service heißt "db" – unter genau diesem Namen erreichen andere Pods die Datenbank
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  selector:
+    app: db
+  ports:
+    - port: 5432
+      targetPort: 5432

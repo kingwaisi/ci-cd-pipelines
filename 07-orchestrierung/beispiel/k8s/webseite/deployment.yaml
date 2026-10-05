@@ -1,0 +1,31 @@
+# Anwenden:  kubectl apply -f k8s/webseite/
+# Status:    kubectl get deployments,pods
+# Löschen:   kubectl delete -f k8s/webseite/
+
+# Ein Deployment sorgt dafür, dass immer die gewünschte Anzahl Pods läuft
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webseite
+  labels:
+    app: webseite
+spec:
+  # Wunschzustand: 3 Kopien (Pods) unserer Webseite
+  replicas: 3
+  # Welche Pods gehören zu diesem Deployment? Alle mit dem Label app=webseite
+  selector:
+    matchLabels:
+      app: webseite
+  # Die Vorlage, aus der jeder Pod erstellt wird
+  template:
+    metadata:
+      labels:
+        app: webseite
+    spec:
+      containers:
+        - name: webseite
+          # Lokal gebautes Image – vorher mit "k3d image import" in den Cluster laden.
+          # Von Docker Hub: <dein-username>/meine-webseite:1.0
+          image: meine-webseite:1.0
+          ports:
+            - containerPort: 80
