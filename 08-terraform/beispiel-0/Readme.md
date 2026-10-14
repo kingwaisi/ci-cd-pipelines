@@ -1,7 +1,7 @@
 # Terraform Getting started
 
 1. Folgenden Block kopieren und in eine `main.tf`- Datei schreiben
-2. Aus dem Ordner mit der `main.tf` terraform init
+2. Aus dem Ordner mit der `main.tf` `terraform init`
 3. `terraform apply` `terraform fmt` `terraform plan` ausführen
 
 4. Folgendes in das Terminal eingeben, um die Credentials für euren AWS Account im Terminal zu hinterlegen (als Umgebungsvariable):
