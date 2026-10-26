@@ -1,0 +1,44 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v5
+
+      - name: Inhalt anzeigen
+        run: ls -la
+
+      - name: Tests ausführen
+        run: ./test.sh
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v5
+
+      - name: Image bauen
+        run: docker build -t meine-webseite:${{ github.sha }} .
+
+      - name: Container starten
+        run: docker run -d --name web -p 8080:80 meine-webseite:${{ github.sha }}
+
+      - name: Antwortet die Webseite?
+        run: |
+          sleep 2
+          curl --fail --silent http://localhost:8080 | grep "Hallo aus der Pipeline"
+
+      - name: Aufräumen
+        if: always()
+        run: docker rm -f web
